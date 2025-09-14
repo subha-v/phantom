@@ -1,0 +1,405 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Arduino: Compile LED Blink",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "compile",
+                "--fqbn",
+                "arduino:renesas_uno:unor4wifi",
+                "${workspaceFolder}/hardware/led_blink"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Arduino: Compile Rainbow LED",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "compile",
+                "--fqbn",
+                "arduino:renesas_uno:unor4wifi",
+                "${workspaceFolder}/hardware/rainbow_led"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Arduino: Compile Stop Sketch",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "compile",
+                "--fqbn",
+                "arduino:renesas_uno:unor4wifi",
+                "${workspaceFolder}/hardware/stop_sketch"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Arduino: Upload LED Blink",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "upload",
+                "--fqbn",
+                "arduino:renesas_uno:unor4wifi",
+                "--port",
+                "/dev/cu.usbmodem34B7DA631B182",
+                "${workspaceFolder}/hardware/led_blink"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": [],
+            "dependsOn": "Arduino: Compile LED Blink"
+        },
+        {
+            "label": "Arduino: Upload Rainbow LED",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "upload",
+                "--fqbn",
+                "arduino:renesas_uno:unor4wifi",
+                "--port",
+                "/dev/cu.usbmodem34B7DA631B182",
+                "${workspaceFolder}/hardware/rainbow_led"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": [],
+            "dependsOn": "Arduino: Compile Rainbow LED"
+        },
+        {
+            "label": "Arduino: Upload Stop Sketch",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "upload",
+                "--fqbn",
+                "arduino:renesas_uno:unor4wifi",
+                "--port",
+                "/dev/cu.usbmodem34B7DA631B182",
+                "${workspaceFolder}/hardware/stop_sketch"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": [],
+            "dependsOn": "Arduino: Compile Stop Sketch"
+        },
+        {
+            "label": "Arduino: List Boards",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "board",
+                "list"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Arduino: Stop/Interrupt Task",
+            "type": "shell",
+            "command": "echo",
+            "args": [
+                "Task interrupted by user"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Arduino: Compile I2c_Scanner",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "compile",
+                "--fqbn",
+                "arduino:renesas_uno:unor4wifi",
+                "${workspaceFolder}/hardware/i2c_scanner"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Arduino: Upload I2c_Scanner",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "upload",
+                "--fqbn",
+                "arduino:renesas_uno:unor4wifi",
+                "--port",
+                "/dev/cu.usbmodem34B7DA631B182",
+                "${workspaceFolder}/hardware/i2c_scanner"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": [],
+            "dependsOn": "Arduino: Compile I2c_Scanner"
+        },
+        {
+            "label": "Arduino: Compile Haptic_Simple",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "compile",
+                "--fqbn",
+                "arduino:renesas_uno:unor4wifi",
+                "${workspaceFolder}/hardware/haptic_simple"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Arduino: Upload Haptic_Simple",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "upload",
+                "--fqbn",
+                "arduino:renesas_uno:unor4wifi",
+                "--port",
+                "/dev/cu.usbmodem34B7DA631B182",
+                "${workspaceFolder}/hardware/haptic_simple"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": [],
+            "dependsOn": "Arduino: Compile Haptic_Simple"
+        },
+        {
+            "label": "Arduino: Compile Modulino_Led",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "compile",
+                "--fqbn",
+                "arduino:renesas_uno:unor4wifi",
+                "${workspaceFolder}/hardware/modulino_led"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Arduino: Upload Modulino_Led",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "upload",
+                "--fqbn",
+                "arduino:renesas_uno:unor4wifi",
+                "--port",
+                "/dev/cu.usbmodem34B7DA631B182",
+                "${workspaceFolder}/hardware/modulino_led"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": [],
+            "dependsOn": "Arduino: Compile Modulino_Led"
+        },
+        {
+            "label": "Arduino: Compile Haptic_Motor",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "compile",
+                "--fqbn",
+                "arduino:renesas_uno:unor4wifi",
+                "${workspaceFolder}/hardware/modulino_led"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Arduino: Upload Haptic_Motor",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "upload",
+                "--fqbn",
+                "arduino:renesas_uno:unor4wifi",
+                "--port",
+                "/dev/cu.usbmodem34B7DA631B182",
+                "${workspaceFolder}/hardware/haptic_motor"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": [],
+            "dependsOn": "Arduino: Compile Haptic_Motor"
+        },
+        {
+            "label": "Arduino: Compile Debug_Basic",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "compile",
+                "--fqbn",
+                "arduino:renesas_uno:unor4wifi",
+                "${workspaceFolder}/hardware/debug_basic"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Arduino: Upload Debug_Basic",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "upload",
+                "--fqbn",
+                "arduino:renesas_uno:unor4wifi",
+                "--port",
+                "/dev/cu.usbmodem34B7DA631B182",
+                "${workspaceFolder}/hardware/debug_basic"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": [],
+            "dependsOn": "Arduino: Compile Debug_Basic"
+        }
+    ]
+}
