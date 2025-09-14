@@ -1,0 +1,17 @@
+[
+    {
+        "key": "ctrl+c",
+        "command": "workbench.action.tasks.terminate",
+        "when": "taskRunning"
+    },
+    {
+        "key": "cmd+shift+x",
+        "command": "workbench.action.tasks.terminate",
+        "when": "taskRunning"
+    },
+    {
+        "key": "escape",
+        "command": "workbench.action.tasks.terminate",
+        "when": "taskRunning && terminalFocus"
+    }
+]
