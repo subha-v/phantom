@@ -29,14 +29,14 @@ from features import FeatureExtractor
 UDP_IP = "127.0.0.1"
 UDP_PORT = 12345
 WEBSOCKET_PORT = 8765
-MODEL_PATH = "../model_training/models/new_model/new_model.pkl"
+MODEL_PATH = "../model_training/models/new1_model/new1_model.pkl"
 
 # Sampling configuration
-INCOMING_SAMPLE_RATE = 500  # Hz from OpenBCI GUI
-TARGET_SAMPLE_RATE = 500    # Hz for model
-WINDOW_SIZE = 500           # Samples at 500Hz (1 second)
+INCOMING_SAMPLE_RATE = 250  # Hz from OpenBCI GUI (8 channel setup)
+TARGET_SAMPLE_RATE = 250    # Hz for model (no downsampling)
+WINDOW_SIZE = 250           # Samples at 250Hz (1 second)
 OVERLAP = 0.5               # 50% overlap for sliding window
-UPDATE_INTERVAL = int(WINDOW_SIZE * (1 - OVERLAP))  # 250 samples
+UPDATE_INTERVAL = int(WINDOW_SIZE * (1 - OVERLAP))  # 125 samples
 
 # Channel configuration matching training setup:
 # Channel 0: T7, Channel 1: T8, Channel 2: C3, Channel 3: C4
@@ -44,7 +44,7 @@ UPDATE_INTERVAL = int(WINDOW_SIZE * (1 - OVERLAP))  # 250 samples
 # Training uses: C3-C4 (ch2-ch3), P3-P4 (ch6-ch7), P7-P8 (ch4-ch5), T7-T8 (ch0-ch1)
 
 class EEGBuffer:
-    """Circular buffer for EEG data at 500Hz"""
+    """Circular buffer for EEG data at 250Hz"""
 
     def __init__(self, n_channels: int = 8, buffer_size: int = WINDOW_SIZE):
         self.n_channels = n_channels
@@ -53,11 +53,11 @@ class EEGBuffer:
         self.sample_counter = 0
 
     def add_samples(self, samples: List[List[float]]):
-        """Add samples at 500Hz without downsampling"""
+        """Add samples at 250Hz without downsampling"""
         for channel_idx, channel_data in enumerate(samples):
             for sample in channel_data:
                 self.buffers[channel_idx].append(sample)
-                self.sample_counter += 1
+        self.sample_counter += len(samples[0]) if samples else 0
 
     def get_window(self) -> Optional[np.ndarray]:
         """Get current window if buffer is full"""
@@ -95,7 +95,11 @@ class TouchDetectionInference:
         if isinstance(model_data, dict):
             self.model = model_data.get('model')
             self.scaler = model_data.get('scaler')
-            print(f"Model loaded successfully (accuracy: {model_data.get('accuracy', 'N/A'):.1%})")
+            accuracy = model_data.get('accuracy', 'N/A')
+            if accuracy != 'N/A':
+                print(f"Model loaded successfully (accuracy: {accuracy:.1%})")
+            else:
+                print("Model loaded successfully (recall-optimized)")
         else:
             raise ValueError("Invalid model file format")
 
@@ -187,7 +191,7 @@ class RealtimeEEGProcessor:
                 if parsed_json.get('type') == 'timeSeriesRaw' and 'data' in parsed_json:
                     raw_eeg_data = parsed_json["data"]
 
-                    # Add to buffer (with downsampling)
+                    # Add to buffer (no downsampling - already at 250Hz)
                     self.buffer.add_samples(raw_eeg_data)
                     self.sample_count += len(raw_eeg_data[0]) if raw_eeg_data else 0
 
@@ -208,8 +212,8 @@ class RealtimeEEGProcessor:
         try:
             prediction, confidence = self.inference.predict(window)
 
-            # Determine status
-            status = "touch" if prediction == 1 and confidence > 0.6 else "normal"
+            # Determine status (lower threshold for better recall)
+            status = "touch" if prediction == 1 and confidence > 0.5 else "normal"
 
             # Create status message
             status_msg = {
@@ -281,9 +285,9 @@ class RealtimeEEGProcessor:
         print("="*60)
         print("Real-time EEG Inference System")
         print("="*60)
-        print("Model: new_model (binary classification)")
-        print("Input: 500Hz, 8 channels from OpenBCI")
-        print("Processing: 500Hz, window size 500 samples (1 second)")
+        print("Model: new1_model (recall-optimized binary classification)")
+        print("Input: 250Hz, 8 channels from OpenBCI")
+        print("Processing: 250Hz, window size 250 samples (1 second)")
         print(f"Output: WebSocket on port {WEBSOCKET_PORT}")
         print("="*60)
 

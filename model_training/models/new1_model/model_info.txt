@@ -1,0 +1,45 @@
+MODEL: new1_model
+==================================================
+Binary Classification Model for Touch Detection (Recall-Optimized)
+
+Training Date: 2025-09-14
+Model Type: Random Forest Classifier
+Task: Binary classification (Touch vs No Touch)
+Optimization: RECALL (Detect all touches)
+
+CLASS MAPPING:
+- Class 0: No Touch (marker = 0)
+- Class 1: Touch (marker = 1)
+
+PERFORMANCE METRICS:
+- Test RECALL: 99.2% ← PRIMARY METRIC
+- Test Precision: 54.9%
+- Test F1-Score: 70.7%
+
+TRAINING DATA:
+- daniel_updated.csv
+- OpenBCI-RAW-2025-09-14_09-02-43.txt
+
+PREPROCESSING:
+- Sample Rate: 250 Hz
+- Window Size: 250 samples (1 second)
+- Overlap: 50%
+- Marker Propagation: 49 samples before, 200 samples after
+- Class Balancing: SMOTE (30% minority) + class weights
+
+FEATURE CONFIGURATION:
+- Channel Pairs: C3-C4, P3-P4, P7-P8, T7-T8
+- Frequency Bands: Delta, Theta, Alpha, Beta, Gamma
+- Total Features: 160
+
+HYPERPARAMETERS (Best):
+- class_weight: {0: 1, 1: 10}
+- max_depth: 3
+- min_samples_leaf: 1
+- min_samples_split: 5
+- n_estimators: 100
+
+FILES:
+- new1_model.pkl: Trained model with scaler
+- performance_plot.png: Performance visualization
+- model_info.txt: This configuration file

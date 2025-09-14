@@ -6,7 +6,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 class EEGPreprocessor:
-    def __init__(self, sample_rate: int = 500):
+    def __init__(self, sample_rate: int = 250):
         self.sample_rate = sample_rate
         self.nyquist = sample_rate / 2
 
@@ -117,14 +117,14 @@ class EEGPreprocessor:
             marker_indices = df[df['Marker'] != 0].index
 
             # Adjust marker propagation windows based on sampling rate
-            if self.sample_rate == 500:
-                # For 500Hz: double the window sizes
-                before_window = 98  # ~0.2 seconds
-                after_window = 400  # ~0.8 seconds
-            else:
-                # For 250Hz: original window sizes
+            if self.sample_rate == 250:
+                # For 250Hz: standard window sizes
                 before_window = 49  # ~0.2 seconds
                 after_window = 200  # ~0.8 seconds
+            else:
+                # For other rates: scale proportionally
+                before_window = int(49 * self.sample_rate / 250)
+                after_window = int(200 * self.sample_rate / 250)
 
             for index in marker_indices:
                 marker_value = df.loc[index, 'Marker']
@@ -192,8 +192,8 @@ class EEGPreprocessor:
         return df_normalized, df_differences
 
 def main():
-    # Default to 500Hz for new 8-channel setup
-    preprocessor = EEGPreprocessor(sample_rate=500)
+    # Default to 250Hz for 8-channel setup
+    preprocessor = EEGPreprocessor(sample_rate=250)
 
     df_normalized, df_differences = preprocessor.preprocess_pipeline(
         "OpenBCI-RAW-2025-09-13_23-58-04.csv"
