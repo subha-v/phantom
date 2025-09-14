@@ -212,16 +212,114 @@ export function CoachChat() {
   }
 
   const handleVoiceButton = async () => {
-    if (isTranscribing) return // Don't do anything if we're processing
+    console.log("Voice button clicked", { isRecording, isTranscribing })
+    if (isTranscribing) {
+      console.log("Already transcribing, skipping")
+      return // Don't do anything if we're processing
+    }
 
-    const transcribedText = await recordAndTranscribe()
+    try {
+      const transcribedText = await recordAndTranscribe()
+      console.log("Transcription result:", transcribedText)
 
-    if (transcribedText && !isRecording) {
-      // We just stopped recording and got text
-      setNewMessage(transcribedText)
+      // If we got text back, it means we just stopped recording
+      if (transcribedText && transcribedText.trim()) {
+        console.log("Auto-sending transcribed message:", transcribedText)
 
-      // Optionally auto-send the message
-      // setTimeout(() => handleSendMessage(), 500)
+        // Directly add the message to the chat without using the input field
+        const userMessage: Message = {
+          id: Date.now().toString(),
+          content: transcribedText.trim(),
+          sender: "user",
+          timestamp: new Date(),
+        }
+
+        // Add user message to chat
+        setMessages(prev => [...prev, userMessage])
+
+        // Clear the input field
+        setNewMessage("")
+
+        // Process the message with the coach
+        setIsProcessing(true)
+
+        try {
+          // Check for Arduino commands first
+          if (transcribedText.toLowerCase().includes('arduino') || transcribedText.toLowerCase().includes('led')) {
+            const arduinoResponse = await sendArduinoCommand(transcribedText)
+
+            if (arduinoResponse) {
+              const coachMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                content: arduinoResponse,
+                sender: "coach",
+                timestamp: new Date(),
+              }
+              setMessages((prev) => [...prev, coachMessage])
+            } else {
+              const errorMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                content: "Unable to connect to Arduino server. Please make sure the Arduino server is running on port 3001.",
+                sender: "coach",
+                timestamp: new Date(),
+              }
+              setMessages((prev) => [...prev, errorMessage])
+            }
+
+            setIsProcessing(false)
+            return
+          }
+
+          // Continue with normal message processing
+          if (!mcpClient.current) {
+            mcpClient.current = new MCPClient()
+          }
+
+          const messageAnalysis = analyzeMessage(transcribedText)
+
+          // Show thinking indicators
+          for (const tool of messageAnalysis.tools) {
+            const thinkingMessage: Message = {
+              id: `thinking-${Date.now()}-${tool}`,
+              content: `Thinking [${tool}]...`,
+              sender: "system",
+              timestamp: new Date(),
+              mcpTool: tool,
+              isThinking: true,
+            }
+            setMessages((prev) => [...prev, thinkingMessage])
+            await new Promise(resolve => setTimeout(resolve, 500))
+          }
+
+          // Get coaching response
+          const response = await mcpClient.current.getCoachingResponse(transcribedText, messages)
+
+          // Remove thinking messages
+          setMessages((prev) => prev.filter(msg => !msg.isThinking))
+
+          // Add coach response
+          const coachMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            content: response,
+            sender: "coach",
+            timestamp: new Date(),
+          }
+          setMessages((prev) => [...prev, coachMessage])
+        } catch (error) {
+          console.error("Error processing message:", error)
+          const errorMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            content: "I'm having trouble processing your message. Please try again.",
+            sender: "coach",
+            timestamp: new Date(),
+          }
+          setMessages((prev) => [...prev, errorMessage])
+        } finally {
+          setIsProcessing(false)
+        }
+      }
+    } catch (error) {
+      console.error("Voice recording error:", error)
     }
   }
 
@@ -299,7 +397,7 @@ export function CoachChat() {
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={handleKeyPress}
-            disabled={isProcessing || isRecording || isTranscribing}
+            disabled={isProcessing || isRecording}
             className="flex-1 min-w-0"
           />
           <Button

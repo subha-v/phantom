@@ -10,15 +10,18 @@ export function useVoiceRecording() {
 
   const startRecording = useCallback(async () => {
     try {
+      console.log("Starting recording...")
       setError(null)
 
       // Request microphone permission
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      console.log("Got microphone stream")
 
       // Create MediaRecorder with the stream
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'audio/webm'
       })
+      console.log("Created MediaRecorder")
 
       mediaRecorderRef.current = mediaRecorder
       audioChunksRef.current = []
@@ -33,9 +36,12 @@ export function useVoiceRecording() {
       // Start recording
       mediaRecorder.start()
       setIsRecording(true)
+      console.log("Recording started")
     } catch (err) {
       console.error("Error accessing microphone:", err)
       setError("Could not access microphone. Please check your permissions.")
+      // Re-throw to let the caller handle it
+      throw err
     }
   }, [])
 
@@ -67,24 +73,31 @@ export function useVoiceRecording() {
 
   const transcribeAudio = useCallback(async (audioBlob: Blob): Promise<string | null> => {
     try {
+      console.log("Starting transcription, blob size:", audioBlob.size)
       setIsProcessing(true)
       setError(null)
 
       // Create FormData with the audio file
       const formData = new FormData()
       formData.append('audio', audioBlob, 'recording.webm')
+      console.log("Created FormData")
 
       // Send to our API endpoint
+      console.log("Sending to /api/transcribe")
       const response = await fetch('/api/transcribe', {
         method: 'POST',
         body: formData,
       })
 
+      console.log("Response status:", response.status)
       if (!response.ok) {
-        throw new Error('Transcription failed')
+        const errorData = await response.json()
+        console.error("Transcription error response:", errorData)
+        throw new Error(errorData.error || 'Transcription failed')
       }
 
       const data = await response.json()
+      console.log("Transcription result:", data)
       return data.text || null
     } catch (err) {
       console.error("Error transcribing audio:", err)
