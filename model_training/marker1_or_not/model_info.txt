@@ -1,0 +1,65 @@
+MODEL: marker1_or_not
+=======================
+Binary Classification Model for Marker 1 Detection
+
+Training Date: 2025-09-14
+Model Type: Random Forest Classifier
+Task: Binary classification (Marker 1 vs Not Marker 1)
+
+CLASS MAPPING:
+- Class 0: Not Marker 1 (includes marker = 0 AND marker = 2)
+- Class 1: Marker 1 (marker = 1 only)
+
+PERFORMANCE METRICS:
+- Test Accuracy: 57.1%
+- ROC AUC: 0.640
+- Validation Accuracy: 61.3%
+
+DATA DISTRIBUTION:
+Original data (after marker propagation):
+- Marker 0 (no touch): 27,597 samples
+- Marker 1: 12,500 samples
+- Marker 2: 5,250 samples
+
+Window-level distribution:
+- Marker 1 windows: 660 (45.7%)
+- Not Marker 1 windows: 784 (54.3%)
+
+DATA SPLIT:
+- Training: 70%
+- Validation: 15%
+- Test: 15%
+- Class Balancing: SMOTE
+
+FEATURE CONFIGURATION:
+- Sample Rate: 250 Hz
+- Window Size: 250 samples (1 second)
+- Overlap: 50% (125 samples)
+- Channel Pairs: C3-C4, P3-P4, P7-P8, T7-T8
+- Frequency Bands: Delta (0.5-4 Hz), Theta (4-8 Hz), Alpha (8-13 Hz), Beta (13-30 Hz), Gamma (30-50 Hz)
+- Total Features: 160
+
+HYPERPARAMETERS (Best):
+- n_estimators: 200
+- max_depth: 20
+- min_samples_split: 2
+- min_samples_leaf: 1
+
+MARKER PROPAGATION:
+- Before window: 49 samples
+- After window: 200 samples
+- Total window: ~1 second of EEG response
+
+PERFORMANCE ANALYSIS:
+The lower accuracy (57.1%) compared to the marker12_or_none model (69.6%) suggests that:
+1. Distinguishing between Marker 1 and Marker 2 is more challenging than general touch detection
+2. Marker 1 and Marker 2 may represent similar EEG patterns (both are touch events)
+3. The model performs only slightly better than random chance (50%)
+
+This indicates that the EEG signatures for different touch types (Marker 1 vs 2) may be very similar,
+making discrimination difficult with current features.
+
+FILES:
+- marker1_detection_model.pkl: Trained model with scaler
+- marker1_performance.png: Performance visualization
+- model_info.txt: This configuration file

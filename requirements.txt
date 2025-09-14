@@ -1,0 +1,6 @@
+openai-whisper
+flask
+flask-cors
+numpy
+torch
+torchaudio

@@ -67,52 +67,14 @@ void setup() {
 uint8_t effect = 1; // effect variable
 
 void loop() {
-  String cmd = readCommand();
-  if (!cmd.length()) return;
-  
-  // Visual feedback routines
-  if (cmd.equalsIgnoreCase("soft")) {
-    softVisualFeedback();
-  } else if (cmd.equalsIgnoreCase("moderate") || cmd.equalsIgnoreCase("mod")) {
-    moderateVisualFeedback();
-  }  else if (cmd.equalsIgnoreCase("rainbow")) {
-    rainbowChase();
-  } else if (cmd.equalsIgnoreCase("color")){
-     colorChase(CYAN);
-  }
-  
-  // Test routines
-  else if (cmd.equalsIgnoreCase("individual") || cmd.equalsIgnoreCase("test")) {
-    testIndividualLEDs();
-  } else if (cmd.equalsIgnoreCase("basic") || cmd.equalsIgnoreCase("all")) {
-    testBasicLEDs();
-  } 
-  
-  // Original commands
-  else if (cmd.equalsIgnoreCase("visual")) {
-    testIndividualLEDs(); // Use the working function
-  } else if (cmd.equalsIgnoreCase("haptic")) {
-    playHaptic(5);
-  } 
-  
-  // Help and clear
-  else if (cmd.equalsIgnoreCase("help")) {
-    Serial.println("\n=== AVAILABLE COMMANDS ===");
-    Serial.println("Visual Routines:");
-    Serial.println("  'soft' - Gentle breathing effect");
-    Serial.println("  'moderate' - Wave pattern");
-    Serial.println("  'intense' - Rapid flashing");
-    Serial.println("  'rainbow' - Rainbow chase");
-    Serial.println("  'binary' - Binary counter");
-    Serial.println("  'heartbeat' - Heartbeat pattern");
-    Serial.println("\nTest Commands:");
-    Serial.println("  'individual' - Test each LED");
-    Serial.println("  'basic' - Test all LEDs at once");
-    Serial.println("  'haptic' - Test haptic feedback");
-    Serial.println("  'help' - Show this menu");
-    Serial.println("  Any other input - Clear LEDs\n");
-  } else {
-    clearLedsHard();
+  // Test haptic on startup - effect 47 is a strong click
+  Serial.println("Testing haptic feedback with effect 47 (strong click)");
+  playHaptic(47);
+
+  // After haptic test, wait forever
+  while(1) {
+    delay(1000);
+    Serial.println("Haptic test complete. Reset Arduino to test again.");
   }
 }
 

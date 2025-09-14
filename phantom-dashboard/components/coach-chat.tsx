@@ -6,10 +6,11 @@ import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Send, Bot, User, Loader2 } from "lucide-react"
+import { Send, Bot, User, Loader2, Mic, MicOff } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import type { Message } from "@/types/chat"
 import { MCPClient } from "@/lib/mcp-client"
+import { useVoiceRecording } from "@/hooks/use-voice-recording"
 
 export function CoachChat() {
   const [messages, setMessages] = useState<Message[]>([
@@ -40,6 +41,14 @@ export function CoachChat() {
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const mcpClient = useRef<MCPClient | null>(null)
+
+  // Voice recording hooks
+  const {
+    isRecording,
+    isProcessing: isTranscribing,
+    error: voiceError,
+    recordAndTranscribe,
+  } = useVoiceRecording()
 
   const handleSendMessage = async () => {
     if (newMessage.trim() && !isProcessing) {
@@ -202,6 +211,20 @@ export function CoachChat() {
     }
   }
 
+  const handleVoiceButton = async () => {
+    if (isTranscribing) return // Don't do anything if we're processing
+
+    const transcribedText = await recordAndTranscribe()
+
+    if (transcribedText && !isRecording) {
+      // We just stopped recording and got text
+      setNewMessage(transcribedText)
+
+      // Optionally auto-send the message
+      // setTimeout(() => handleSendMessage(), 500)
+    }
+  }
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
@@ -264,17 +287,49 @@ export function CoachChat() {
       <div className="border-t bg-background p-4 flex-shrink-0">
         <div className="flex space-x-2 w-full">
           <Input
-            placeholder={isProcessing ? "Coach is thinking..." : "Type your message to the coach..."}
+            placeholder={
+              isRecording
+                ? "Listening..."
+                : isTranscribing
+                ? "Processing speech..."
+                : isProcessing
+                ? "Coach is thinking..."
+                : "Type your message to the coach..."
+            }
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={handleKeyPress}
-            disabled={isProcessing}
+            disabled={isProcessing || isRecording || isTranscribing}
             className="flex-1 min-w-0"
           />
-          <Button onClick={handleSendMessage} size="icon" disabled={isProcessing} className="flex-shrink-0">
+          <Button
+            onClick={handleVoiceButton}
+            size="icon"
+            disabled={isProcessing || isTranscribing}
+            variant={isRecording ? "destructive" : "outline"}
+            className="flex-shrink-0"
+            title={isRecording ? "Stop recording" : "Start voice recording"}
+          >
+            {isTranscribing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : isRecording ? (
+              <MicOff className="h-4 w-4" />
+            ) : (
+              <Mic className="h-4 w-4" />
+            )}
+          </Button>
+          <Button
+            onClick={handleSendMessage}
+            size="icon"
+            disabled={isProcessing || !newMessage.trim()}
+            className="flex-shrink-0"
+          >
             {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </div>
+        {voiceError && (
+          <p className="text-xs text-destructive mt-2">{voiceError}</p>
+        )}
       </div>
     </div>
   )

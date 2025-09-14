@@ -1,0 +1,99 @@
+MODEL: multiclass_marker
+==========================
+Multiclass Classification for Rubber Hand Illusion Detection
+
+Training Date: 2025-09-14
+Model Type: Support Vector Machine (SVM) with One-vs-Rest
+Task: 3-class classification for rubber hand illusion EEG detection
+
+CLASS MAPPING:
+- Class 0: No Touch (no stimulation)
+- Class 1: Both Hands (real + fake hand touched simultaneously)
+- Class 2: Fake Hand Only (only fake hand touched)
+
+NEUROSCIENCE CONTEXT:
+This model is designed to detect the rubber hand illusion, a phenomenon where
+synchronous touching of a real hand and a rubber hand can create a sense of
+ownership over the fake hand. The three classes represent different experimental
+conditions in the rubber hand illusion paradigm.
+
+PERFORMANCE METRICS (TEST SET):
+- Overall Accuracy: 47.9%
+- Macro F1-Score: 0.469
+- Weighted F1-Score: 0.48
+
+PER-CLASS PERFORMANCE:
+                Precision  Recall  F1-Score  Support
+No Touch           0.51     0.47     0.49      76
+Both Hands         0.55     0.47     0.51      99
+Fake Hand Only     0.34     0.50     0.40      42
+
+CONFUSION MATRIX:
+                Predicted
+              NT   BH   FH
+Actual    NT  36   32    8
+          BH  24   47   28
+          FH  11   10   21
+
+(NT=No Touch, BH=Both Hands, FH=Fake Hand)
+
+DATA DISTRIBUTION:
+Training samples after balancing:
+- No Touch: 352 samples
+- Both Hands: 462 samples
+- Fake Hand Only: 196 samples
+
+Original window-level distribution:
+- No Touch: 504 (34.9%)
+- Both Hands: 660 (45.7%)
+- Fake Hand Only: 280 (19.4%)
+
+DATA SPLIT:
+- Training: 70%
+- Validation: 15%
+- Test: 15%
+- Class Balancing: Class weights computed for balanced training
+
+FEATURE CONFIGURATION:
+- Sample Rate: 250 Hz
+- Window Size: 250 samples (1 second)
+- Overlap: 50% (125 samples)
+- Channel Pairs: C3-C4, P3-P4, P7-P8, T7-T8
+- Frequency Bands: Delta (0.5-4 Hz), Theta (4-8 Hz), Alpha (8-13 Hz), Beta (13-30 Hz), Gamma (30-50 Hz)
+- Total Features: 160
+
+BEST MODEL HYPERPARAMETERS (SVM):
+- C: 10
+- Kernel: RBF
+- Gamma: auto
+- Decision Function: One-vs-Rest
+- Class Weight: balanced
+
+COMPARISON WITH BINARY MODELS:
+- marker12_or_none (binary): 69.6% accuracy
+- marker1_or_not (binary): 57.1% accuracy
+- multiclass_marker: 47.9% accuracy
+
+The lower accuracy in multiclass compared to binary classification indicates:
+1. The complexity of distinguishing between three distinct neural states
+2. The similarity between "Both Hands" and "Fake Hand Only" neural signatures
+3. The challenge of detecting subtle differences in somatosensory processing
+
+PERFORMANCE ANALYSIS:
+1. The model performs best on "Both Hands" class (F1: 0.51)
+2. "Fake Hand Only" is the most challenging class (F1: 0.40)
+3. Confusion between "Both Hands" and "Fake Hand Only" is common
+4. The model performs significantly better than random chance (33.3%)
+
+RECOMMENDATIONS FOR IMPROVEMENT:
+1. Collect more data, especially for the minority "Fake Hand Only" class
+2. Explore temporal features capturing the dynamics of touch response
+3. Add cross-frequency coupling features
+4. Consider hierarchical classification (first detect touch/no-touch, then classify touch type)
+5. Investigate deep learning approaches (CNN-LSTM) for automatic feature learning
+
+FILES:
+- multiclass_model.pkl: Trained SVM model with scaler
+- multiclass_performance.png: Performance visualization with confusion matrices
+- model_info.txt: This configuration file
+- train_model_multiclass.py: Training script for reproduction
