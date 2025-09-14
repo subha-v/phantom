@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Download, Phone, Zap, FileText, AlertTriangle } from "lucide-react"
+import { Download, Phone, Zap, FileText, AlertTriangle, Sparkles, Activity, Flame } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -16,25 +16,48 @@ import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 
 export function FooterActions() {
-  const [isHapticActive, setIsHapticActive] = useState(false)
+  const [activeHaptic, setActiveHaptic] = useState<string | null>(null)
   const [emergencyDialogOpen, setEmergencyDialogOpen] = useState(false)
   const { toast } = useToast()
 
-  const triggerTestHaptic = () => {
-    setIsHapticActive(true)
-    toast({
-      title: "Test Haptic Triggered",
-      description: "Haptic feedback device activated for 3 seconds",
-    })
+  const triggerHaptic = async (intensity: "subtle" | "moderate" | "high") => {
+    setActiveHaptic(intensity)
 
-    // Simulate haptic duration
-    setTimeout(() => {
-      setIsHapticActive(false)
-      toast({
-        title: "Haptic Complete",
-        description: "Test haptic feedback completed successfully",
+    try {
+      const response = await fetch("/api/arduino/haptic", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ intensity }),
       })
-    }, 3000)
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast({
+          title: `${intensity.charAt(0).toUpperCase() + intensity.slice(1)} Haptic Triggered`,
+          description: `Arduino responded: ${data.arduinoResponse || "Feedback activated"}`,
+        })
+      } else {
+        toast({
+          title: "Connection Error",
+          description: data.error || "Failed to communicate with Arduino",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send haptic command. Check Arduino connection.",
+        variant: "destructive",
+      })
+    } finally {
+      // Reset active state after animation
+      setTimeout(() => {
+        setActiveHaptic(null)
+      }, 3000)
+    }
   }
 
   const exportReport = () => {
@@ -65,24 +88,71 @@ export function FooterActions() {
     <div className="space-y-4">
       {/* Quick Actions */}
       <div className="flex flex-wrap gap-4 justify-center">
-        {/* Test Haptic Button */}
-        <Button
-          variant="outline"
-          className={`flex items-center space-x-2 transition-all duration-300 ${
-            isHapticActive ? "bg-blue-100 dark:bg-blue-950 border-blue-300 dark:border-blue-700" : "bg-transparent"
-          }`}
-          onClick={triggerTestHaptic}
-          disabled={isHapticActive}
-        >
-          <div
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              isHapticActive ? "bg-blue-500 animate-pulse scale-150" : "bg-blue-500"
+        {/* Haptic Intensity Buttons */}
+        <div className="flex gap-2">
+          {/* Subtle Haptic */}
+          <Button
+            variant="outline"
+            className={`flex items-center space-x-2 transition-all duration-300 ${
+              activeHaptic === "subtle"
+                ? "bg-blue-100 dark:bg-blue-950 border-blue-400 dark:border-blue-600"
+                : "hover:bg-blue-50 dark:hover:bg-blue-950/30"
             }`}
-          ></div>
-          <Zap className={`h-4 w-4 ${isHapticActive ? "animate-bounce" : ""}`} />
-          <span>{isHapticActive ? "Haptic Active..." : "Trigger Test Haptic"}</span>
-          {isHapticActive && <Badge variant="secondary">3s</Badge>}
-        </Button>
+            onClick={() => triggerHaptic("subtle")}
+            disabled={activeHaptic !== null}
+          >
+            <div
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                activeHaptic === "subtle" ? "bg-blue-400 animate-pulse scale-150" : "bg-blue-400"
+              }`}
+            />
+            <Sparkles className={`h-4 w-4 ${activeHaptic === "subtle" ? "animate-pulse" : ""}`} />
+            <span>Subtle</span>
+            {activeHaptic === "subtle" && <Badge variant="secondary" className="ml-1">Active</Badge>}
+          </Button>
+
+          {/* Moderate Haptic */}
+          <Button
+            variant="outline"
+            className={`flex items-center space-x-2 transition-all duration-300 ${
+              activeHaptic === "moderate"
+                ? "bg-yellow-100 dark:bg-yellow-950 border-yellow-400 dark:border-yellow-600"
+                : "hover:bg-yellow-50 dark:hover:bg-yellow-950/30"
+            }`}
+            onClick={() => triggerHaptic("moderate")}
+            disabled={activeHaptic !== null}
+          >
+            <div
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                activeHaptic === "moderate" ? "bg-yellow-500 animate-pulse scale-150" : "bg-yellow-500"
+              }`}
+            />
+            <Activity className={`h-4 w-4 ${activeHaptic === "moderate" ? "animate-bounce" : ""}`} />
+            <span>Moderate</span>
+            {activeHaptic === "moderate" && <Badge variant="secondary" className="ml-1">Active</Badge>}
+          </Button>
+
+          {/* High Haptic */}
+          <Button
+            variant="outline"
+            className={`flex items-center space-x-2 transition-all duration-300 ${
+              activeHaptic === "high"
+                ? "bg-red-100 dark:bg-red-950 border-red-400 dark:border-red-600"
+                : "hover:bg-red-50 dark:hover:bg-red-950/30"
+            }`}
+            onClick={() => triggerHaptic("high")}
+            disabled={activeHaptic !== null}
+          >
+            <div
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                activeHaptic === "high" ? "bg-red-500 animate-pulse scale-150" : "bg-red-500"
+              }`}
+            />
+            <Flame className={`h-4 w-4 ${activeHaptic === "high" ? "animate-bounce" : ""}`} />
+            <span>High</span>
+            {activeHaptic === "high" && <Badge variant="secondary" className="ml-1">Active</Badge>}
+          </Button>
+        </div>
 
         {/* Export Report Button */}
         <Dialog>
