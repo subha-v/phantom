@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { StatusIndicator } from "@/components/status-indicator"
 import { HapticLog } from "@/components/haptic-log"
 import { VoiceJournal } from "@/components/voice-journal"
-import { CoachChat } from "@/components/coach-chat"
+import { CoachChatEnhanced } from "@/components/coach-chat-enhanced"
 import { InsightsChart } from "@/components/insights-chart"
 import { FooterActions } from "@/components/footer-actions"
 
@@ -95,7 +95,7 @@ export default function Dashboard() {
                 <CardTitle>Coach Chat</CardTitle>
               </CardHeader>
               <CardContent>
-                <CoachChat />
+                <CoachChatEnhanced />
               </CardContent>
             </Card>
           </div>
