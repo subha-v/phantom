@@ -8,6 +8,7 @@ Original file is located at
 """
 
 import pandas as pd
+import numpy as np
 
 try:
     df = pd.read_csv("OpenBCI-RAW-2025-09-13_23-58-04.csv")
@@ -82,4 +83,21 @@ new_channel_names = {
 df = df.rename(columns=new_channel_names)
 
 display(df.head())
+
+# Find the indices where the 'Marker' column is not zero
+marker_indices = df[df['Marker'] != 0].index
+
+# Define the window size
+before_window = 49
+after_window = 200
+
+# Iterate through the marker indices and propagate the marker value
+for index in marker_indices:
+    marker_value = df.loc[index, 'Marker']
+    start_index = max(0, index - before_window)
+    end_index = min(len(df) - 1, index + after_window)
+
+    # Propagate to zeros only - preserve existing non-zero markers
+    mask = (df.loc[start_index:end_index, 'Marker'] == 0)
+    df.loc[start_index:end_index, 'Marker'] = df.loc[start_index:end_index, 'Marker'].where(~mask, marker_value)
 
