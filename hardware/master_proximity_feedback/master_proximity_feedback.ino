@@ -98,6 +98,7 @@ void setup() {
   Wire1.setClock(100000);
 
   Serial.println("=== Phantom Master Proximity Feedback System ===");
+  Serial.println("Ready for ESP32 serial commands");
 
   Modulino.begin();
   distance.begin();
@@ -120,6 +121,14 @@ void loop() {
   // Handle user commands
   String cmd = readCommand();
   if (!cmd.length()) return;
+  
+  Serial.print("Command received: ");
+  Serial.println(cmd);
+  
+  // Flash built-in LED to indicate command received
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(100);
+  digitalWrite(LED_BUILTIN, LOW);
   
   // Visual feedback routines
   if (cmd.equalsIgnoreCase("soft")) {
@@ -187,6 +196,8 @@ void loop() {
     Serial.println("  'help' - Show this menu");
     Serial.println("  Any other input - Clear LEDs\n");
   } else {
+    Serial.print("Unknown command: ");
+    Serial.println(cmd);
     clearLedsHard();
   }
 }

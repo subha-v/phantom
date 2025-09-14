@@ -445,6 +445,51 @@
             },
             "problemMatcher": [],
             "dependsOn": "Arduino: Compile Master_Proximity_Feedback"
+        },
+        {
+            "label": "ESP32: Compile Serial Bridge",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "compile",
+                "--fqbn",
+                "esp32:esp32:XIAO_ESP32C3",
+                "${workspaceFolder}/hardware/esp32_serial_bridge"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "ESP32: Upload Serial Bridge",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "upload",
+                "--fqbn",
+                "esp32:esp32:XIAO_ESP32C3",
+                "--port",
+                "/dev/cu.usbmodem1301",
+                "${workspaceFolder}/hardware/esp32_serial_bridge"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": [],
+            "dependsOn": "ESP32: Compile Serial Bridge"
         }
     ]
 }
