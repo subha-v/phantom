@@ -55,6 +55,51 @@ export function CoachChat() {
       setIsProcessing(true)
 
       try {
+        // Check if user wants to trigger haptic feedback
+        if (newMessage.toLowerCase().includes("play haptic feedback")) {
+          // Trigger haptic feedback on Arduino
+          try {
+            const hapticResponse = await fetch("http://localhost:3001/api/arduino/haptic", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            })
+
+            const hapticResult = await hapticResponse.json()
+
+            if (hapticResult.success) {
+              const feedbackMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                content: "✓ Haptic feedback triggered successfully! The Arduino should be providing tactile feedback now.",
+                sender: "coach",
+                timestamp: new Date(),
+              }
+              setMessages((prev) => [...prev, feedbackMessage])
+            } else {
+              const errorMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                content: `Unable to trigger haptic feedback: ${hapticResult.error}. Please make sure the Arduino is connected and the server is running.`,
+                sender: "coach",
+                timestamp: new Date(),
+              }
+              setMessages((prev) => [...prev, errorMessage])
+            }
+          } catch (error) {
+            const errorMessage: Message = {
+              id: (Date.now() + 1).toString(),
+              content: "Unable to connect to Arduino server. Please make sure the Arduino server is running on port 3001.",
+              sender: "coach",
+              timestamp: new Date(),
+            }
+            setMessages((prev) => [...prev, errorMessage])
+          }
+
+          setIsProcessing(false)
+          return
+        }
+
+        // Continue with normal message processing
         // Initialize MCP client if not already done
         if (!mcpClient.current) {
           mcpClient.current = new MCPClient()
@@ -118,6 +163,12 @@ export function CoachChat() {
   const analyzeMessage = (message: string): { tools: string[] } => {
     const tools: string[] = []
     const lowerMessage = message.toLowerCase()
+
+    // Check for haptic feedback request first (special handling)
+    if (lowerMessage.includes("play haptic") || lowerMessage.includes("haptic feedback")) {
+      tools.push("trigger_haptic")
+      return { tools } // Return early for haptic feedback
+    }
 
     // Check for different types of requests
     if (lowerMessage.includes("exercise") || lowerMessage.includes("therapy") || lowerMessage.includes("stretch")) {
@@ -216,7 +267,7 @@ export function CoachChat() {
             placeholder={isProcessing ? "Coach is thinking..." : "Type your message to the coach..."}
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyPress}
             disabled={isProcessing}
             className="flex-1 min-w-0"
           />
