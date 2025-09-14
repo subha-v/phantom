@@ -447,11 +447,14 @@ void visualFeedback(ModulinoColor color) {
 void playHaptic(uint8_t fx) {
   Serial.print("Haptic effect "); Serial.println(fx);
   for (int i = 0; i < 3; i++){
-    drv.setWaveform(0, fx);  // slot 0
-    drv.setWaveform(1, 0);   // end
-    drv.go();
-    delay(300);
+    for (int i = 0; i < 3; i++){
+        drv.setWaveform(0, fx);  // slot 0
+        drv.setWaveform(1, 0);   // end
+        drv.go();
+        delay(300);
+      }
+      delay(1000);
   }
-
-  delay(1000);
+  
+  delay(100);
 }
