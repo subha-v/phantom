@@ -400,6 +400,51 @@
             },
             "problemMatcher": [],
             "dependsOn": "Arduino: Compile Debug_Basic"
+        },
+        {
+            "label": "Arduino: Compile Master_Proximity_Feedback",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "compile",
+                "--fqbn",
+                "arduino:renesas_uno:unor4wifi",
+                "${workspaceFolder}/hardware/master_proximity_feedback"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Arduino: Upload Master_Proximity_Feedback",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "upload",
+                "--fqbn",
+                "arduino:renesas_uno:unor4wifi",
+                "--port",
+                "/dev/cu.usbmodem34B7DA631B182",
+                "${workspaceFolder}/hardware/master_proximity_feedback"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": [],
+            "dependsOn": "Arduino: Compile Master_Proximity_Feedback"
         }
     ]
 }

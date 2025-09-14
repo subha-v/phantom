@@ -20,10 +20,8 @@ bool isInContact = false;
 // Haptic patterns
 enum HapticMode {
   NO_FEEDBACK,
-  PROXIMITY_PULSE,
   LIGHT_TOUCH,
   FIRM_CONTACT,
-  PRESSURE_GRADIENT
 };
 
 HapticMode currentMode = NO_FEEDBACK;
@@ -75,12 +73,7 @@ void processDistanceFeedback(int measure) {
     currentMode = LIGHT_TOUCH;
     Serial.println("LIGHT TOUCH");
     
-  } else if (measure <= PROXIMITY_THRESHOLD) {
-    // Proximity awareness
-    currentMode = PROXIMITY_PULSE;
-    Serial.println("PROXIMITY");
-    
-  } else {
+  }  else {
     // No feedback needed
     currentMode = NO_FEEDBACK;
     Serial.println("NO CONTACT");
@@ -106,12 +99,6 @@ void executeHapticFeedback() {
       feedbackInterval = 100;  // Slower checking when no contact
       break;
       
-    case PROXIMITY_PULSE:
-      // Gentle pulsing for proximity awareness
-      proximityPulseFeedback();
-      feedbackInterval = 300;  // Medium pulse rate
-      break;
-      
     case LIGHT_TOUCH:
       // Gentle continuous feedback for light touch
       lightTouchFeedback();
@@ -124,11 +111,7 @@ void executeHapticFeedback() {
       feedbackInterval = 30;   // Very responsive
       break;
       
-    case PRESSURE_GRADIENT:
-      // Variable feedback based on distance gradient
-      pressureGradientFeedback();
-      feedbackInterval = 40;
-      break;
+   
   }
 }
 
