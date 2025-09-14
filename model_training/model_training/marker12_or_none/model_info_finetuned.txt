@@ -1,0 +1,30 @@
+MODEL: marker12_or_none (FINE-TUNED)
+========================================
+Binary Classification Model for EEG Touch Detection
+
+Fine-tuning Date: 2025-09-14
+Model Type: Random Forest Classifier (Fine-tuned)
+Task: Binary classification (touch vs no-touch)
+
+CLASS MAPPING:
+- Class 0: No touch (marker = 0)
+- Class 1: Touch (marker = 1 OR marker = 2)
+
+PERFORMANCE METRICS (After Fine-tuning):
+- Test Accuracy: 76.5%
+- ROC AUC: 0.735
+
+TRAINING DATA:
+- Original model: OpenBCI-RAW-2025-09-13_23-58-04.csv
+- Fine-tuning data 1: OpenBCI-RAW-2025-09-13_23-37-22.csv
+- Fine-tuning data 2: OpenBCI-RAW-2025-09-13_23-45-56.csv
+
+FINE-TUNING CONFIGURATION:
+- Method: Warm-start incremental learning
+- Total estimators: 300
+- Class balancing: SMOTE
+
+FILES:
+- touch_detection_model_finetuned.pkl: Fine-tuned model with scaler
+- model_comparison.png: Performance comparison visualization
+- model_info_finetuned.txt: This configuration file
