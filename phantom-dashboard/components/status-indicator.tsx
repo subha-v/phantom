@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
+import { useEEGStatus } from "@/hooks/useEEGStatus"
 
-type StatusType = "normal" | "fear" | "pain"
+type StatusType = "normal" | "touch"
 
 interface StatusConfig {
   color: string
@@ -18,58 +19,84 @@ const statusConfigs: Record<StatusType, StatusConfig> = {
     color: "bg-green-500",
     bgColor: "bg-green-400",
     label: "NORMAL",
-    description: "No pain detected, all systems normal",
+    description: "No touch detected, monitoring EEG signals",
     badgeVariant: "secondary",
   },
-  fear: {
-    color: "bg-yellow-500",
-    bgColor: "bg-yellow-400",
-    label: "FEAR",
-    description: "Fear spike detected, monitoring closely",
-    badgeVariant: "outline",
-  },
-  pain: {
-    color: "bg-red-500",
-    bgColor: "bg-red-400",
-    label: "PAIN",
-    description: "Pain detected, haptic triggered",
-    badgeVariant: "destructive",
+  touch: {
+    color: "bg-blue-500",
+    bgColor: "bg-blue-400",
+    label: "TOUCH",
+    description: "Touch detected (Marker 1)",
+    badgeVariant: "default",
   },
 }
 
 export function StatusIndicator() {
-  const [currentStatus, setCurrentStatus] = useState<StatusType>("pain")
+  const { status, confidence, isConnected, error } = useEEGStatus()
   const [isAnimating, setIsAnimating] = useState(false)
+  const [previousStatus, setPreviousStatus] = useState<StatusType>("normal")
 
-  // Simulate status changes for demo
+  // Animate on status change
   useEffect(() => {
-    const interval = setInterval(() => {
+    if (status !== previousStatus) {
       setIsAnimating(true)
       setTimeout(() => {
-        const statuses: StatusType[] = ["normal", "fear", "pain"]
-        const randomStatus = statuses[Math.floor(Math.random() * statuses.length)]
-        setCurrentStatus(randomStatus)
         setIsAnimating(false)
       }, 500)
-    }, 8000)
+      setPreviousStatus(status)
+    }
+  }, [status, previousStatus])
 
-    return () => clearInterval(interval)
-  }, [])
+  const config = statusConfigs[status]
 
-  const config = statusConfigs[currentStatus]
+  // Show connection status if not connected
+  if (!isConnected) {
+    return (
+      <div className="flex flex-col items-center space-y-4">
+        <div className="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center animate-pulse">
+          <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
+            <span className="text-gray-600 font-bold text-sm">OFFLINE</span>
+          </div>
+        </div>
+        <p className="text-center text-muted-foreground text-sm">
+          {error || "Connecting to EEG sensor..."}
+        </p>
+        <Badge variant="outline">Disconnected</Badge>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col items-center space-y-4">
       <div
-        className={`w-24 h-24 rounded-full ${config.color} flex items-center justify-center transition-all duration-500 ${isAnimating ? "scale-110 animate-pulse" : ""}`}
+        className={`w-24 h-24 rounded-full ${config.color} flex items-center justify-center transition-all duration-500 ${
+          isAnimating ? "scale-110 animate-pulse" : ""
+        }`}
       >
         <div className={`w-16 h-16 rounded-full ${config.bgColor} flex items-center justify-center`}>
           <span className="text-white font-bold text-sm">{config.label}</span>
         </div>
       </div>
+
       <p className="text-center text-muted-foreground text-sm">{config.description}</p>
+
+      {/* Confidence indicator */}
+      <div className="flex flex-col items-center space-y-1">
+        <div className="text-xs text-muted-foreground">
+          Confidence: {(confidence * 100).toFixed(1)}%
+        </div>
+        <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div
+            className={`h-full transition-all duration-300 ${
+              status === "touch" ? "bg-blue-500" : "bg-green-500"
+            }`}
+            style={{ width: `${confidence * 100}%` }}
+          />
+        </div>
+      </div>
+
       <Badge variant={config.badgeVariant}>
-        {currentStatus === "normal" ? "All Clear" : currentStatus === "fear" ? "Monitoring" : "Active Episode"}
+        {status === "normal" ? "Monitoring" : "Touch Detected"}
       </Badge>
     </div>
   )
