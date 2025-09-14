@@ -23,11 +23,11 @@ const statusConfigs: Record<StatusType, StatusConfig> = {
     badgeVariant: "secondary",
   },
   touch: {
-    color: "bg-blue-500",
-    bgColor: "bg-blue-400",
+    color: "bg-red-500",
+    bgColor: "bg-red-400",
     label: "TOUCH",
-    description: "Touch detected (Marker 1)",
-    badgeVariant: "default",
+    description: "Touch detected",
+    badgeVariant: "destructive",
   },
 }
 
@@ -88,7 +88,7 @@ export function StatusIndicator() {
         <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
           <div
             className={`h-full transition-all duration-300 ${
-              status === "touch" ? "bg-blue-500" : "bg-green-500"
+              status === "touch" ? "bg-red-500" : "bg-green-500"
             }`}
             style={{ width: `${confidence * 100}%` }}
           />

@@ -1,0 +1,2 @@
+- Also note that we only have 0 and 1 markers now - whether we have the touch or no touch. It should be binary. We are no longer doing marker 2.
+- We are sampling at 500 hz now

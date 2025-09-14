@@ -29,7 +29,7 @@ from features import FeatureExtractor
 UDP_IP = "127.0.0.1"
 UDP_PORT = 12345
 WEBSOCKET_PORT = 8765
-MODEL_PATH = "../model_training/models/marker1_only_4data/marker1_only_4data_model.pkl"
+MODEL_PATH = "../model_training/models/new_model/new_model.pkl"
 
 # Sampling configuration
 INCOMING_SAMPLE_RATE = 500  # Hz from OpenBCI GUI
@@ -155,8 +155,9 @@ class TouchDetectionInference:
         prediction = self.model.predict(features_scaled)[0]
         probabilities = self.model.predict_proba(features_scaled)[0]
 
-        # Return prediction and confidence for marker 1
-        confidence = probabilities[1] if prediction == 1 else 1 - probabilities[1]
+        # Return prediction and confidence
+        # Always return the confidence for the predicted class
+        confidence = probabilities[prediction]
 
         return prediction, confidence
 
@@ -281,7 +282,7 @@ class RealtimeEEGProcessor:
         print("="*60)
         print("Real-time EEG Inference System")
         print("="*60)
-        print(f"Model: marker1_only_4data")
+        print(f"Model: new_model (binary classification)")
         print(f"Input: 500Hz, 8 channels from OpenBCI")
         print(f"Processing: Downsampling to 250Hz, window size 250 samples")
         print(f"Output: WebSocket on port {WEBSOCKET_PORT}")

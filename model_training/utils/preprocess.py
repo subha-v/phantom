@@ -6,7 +6,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 class EEGPreprocessor:
-    def __init__(self, sample_rate: int = 250):
+    def __init__(self, sample_rate: int = 500):
         self.sample_rate = sample_rate
         self.nyquist = sample_rate / 2
 
@@ -36,29 +36,78 @@ class EEGPreprocessor:
             filters[band_name] = sos
         return filters
 
+    def detect_sample_rate(self, filepath: str) -> int:
+        """Detect sample rate from CSV header"""
+        with open(filepath, 'r') as f:
+            for i, line in enumerate(f):
+                if i >= 4:  # Only check first 4 lines
+                    break
+                if 'Sample Rate' in line:
+                    # Extract number from line like "%Sample Rate = 500 Hz"
+                    import re
+                    match = re.search(r'(\d+)\s*Hz', line)
+                    if match:
+                        return int(match.group(1))
+        return self.sample_rate  # Return default if not found
+
     def load_data(self, filepath: str) -> pd.DataFrame:
+        # Auto-detect and update sample rate if different
+        detected_rate = self.detect_sample_rate(filepath)
+        if detected_rate != self.sample_rate:
+            print(f"Detected sample rate {detected_rate}Hz, updating from {self.sample_rate}Hz")
+            self.sample_rate = detected_rate
+            self.nyquist = detected_rate / 2
+            self.filters = self._create_filters()  # Recreate filters for new rate
+
         df = pd.read_csv(filepath, skiprows=4)
 
         df.columns = df.columns.str.strip()
         df.columns = df.columns.str.replace('EOG ', '', regex=False)
 
-        columns_to_drop = ['Channel 0', 'Channel 1'] + [f'Channel {i}' for i in range(10, 16)] + \
-                         ['Accel Channel 0', 'Accel Channel 1', 'Accel Channel 2', 'Not Used',
-                          'Digital Channel 0 (D11)', 'Digital Channel 1 (D12)', 'Digital Channel 2 (D13)',
-                          'Digital Channel 3 (D17)', 'Not Used.1', 'Digital Channel 4 (D18)',
-                          'Analog Channel 0', 'Analog Channel 1', 'Analog Channel 2']
-        df = df.drop(columns=columns_to_drop, errors='ignore')
+        # Check if we have 8-channel or 16-channel data
+        num_channels = len([col for col in df.columns if col.startswith('Channel')])
 
-        channel_mapping = {
-            'Channel 2': 'C3',
-            'Channel 3': 'C4',
-            'Channel 4': 'P7',
-            'Channel 5': 'P8',
-            'Channel 6': 'P3',
-            'Channel 7': 'P4',
-            'Channel 8': 'T7',
-            'Channel 9': 'T8'
-        }
+        if num_channels == 8:
+            # New Setup v2: 8 channels at 500Hz
+            # Only drop non-EEG columns
+            columns_to_drop = ['Accel Channel 0', 'Accel Channel 1', 'Accel Channel 2', 'Not Used',
+                             'Digital Channel 0 (D11)', 'Digital Channel 1 (D12)', 'Digital Channel 2 (D13)',
+                             'Digital Channel 3 (D17)', 'Not Used.1', 'Digital Channel 4 (D18)',
+                             'Analog Channel 0', 'Analog Channel 1', 'Analog Channel 2']
+            df = df.drop(columns=columns_to_drop, errors='ignore')
+
+            # New channel mapping for 8-channel setup
+            channel_mapping = {
+                'Channel 0': 'T7',
+                'Channel 1': 'T8',
+                'Channel 2': 'C3',
+                'Channel 3': 'C4',
+                'Channel 4': 'P7',
+                'Channel 5': 'P8',
+                'Channel 6': 'P3',
+                'Channel 7': 'P4'
+            }
+        else:
+            # Original Setup v1: 16 channels at 250Hz
+            columns_to_drop = ['Channel 0', 'Channel 1'] + [f'Channel {i}' for i in range(10, 16)] + \
+                             ['Accel Channel 0', 'Accel Channel 1', 'Accel Channel 2', 'Not Used',
+                              'Digital Channel 0 (D11)', 'Digital Channel 1 (D12)', 'Digital Channel 2 (D13)',
+                              'Digital Channel 3 (D17)', 'Not Used.1', 'Digital Channel 4 (D18)',
+                              'Analog Channel 0', 'Analog Channel 1', 'Analog Channel 2']
+            df = df.drop(columns=columns_to_drop, errors='ignore')
+
+            # Original channel mapping for 16-channel setup
+            channel_mapping = {
+                'Channel 2': 'C3',
+                'Channel 3': 'C4',
+                'Channel 4': 'P7',
+                'Channel 5': 'P8',
+                'Channel 6': 'P3',
+                'Channel 7': 'P4',
+                'Channel 8': 'T7',
+                'Channel 9': 'T8'
+            }
+
         df = df.rename(columns=channel_mapping)
 
         df = df.replace([np.inf, -np.inf], np.nan)
@@ -66,8 +115,16 @@ class EEGPreprocessor:
 
         if 'Marker' in df.columns:
             marker_indices = df[df['Marker'] != 0].index
-            before_window = 49
-            after_window = 200
+
+            # Adjust marker propagation windows based on sampling rate
+            if self.sample_rate == 500:
+                # For 500Hz: double the window sizes
+                before_window = 98  # ~0.2 seconds
+                after_window = 400  # ~0.8 seconds
+            else:
+                # For 250Hz: original window sizes
+                before_window = 49  # ~0.2 seconds
+                after_window = 200  # ~0.8 seconds
 
             for index in marker_indices:
                 marker_value = df.loc[index, 'Marker']
@@ -135,7 +192,8 @@ class EEGPreprocessor:
         return df_normalized, df_differences
 
 def main():
-    preprocessor = EEGPreprocessor(sample_rate=250)
+    # Default to 500Hz for new 8-channel setup
+    preprocessor = EEGPreprocessor(sample_rate=500)
 
     df_normalized, df_differences = preprocessor.preprocess_pipeline(
         "OpenBCI-RAW-2025-09-13_23-58-04.csv"

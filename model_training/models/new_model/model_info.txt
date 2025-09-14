@@ -1,0 +1,43 @@
+MODEL: new_model
+==================================================
+Binary Classification Model for Touch Detection
+
+Training Date: 2025-09-14
+Model Type: Random Forest Classifier
+Task: Binary classification (Touch vs No Touch)
+
+CLASS MAPPING:
+- Class 0: No Touch (marker = 0)
+- Class 1: Touch (marker = 1)
+
+PERFORMANCE METRICS:
+- Test Accuracy: 75.7%
+- ROC AUC: 0.717
+
+TRAINING DATA:
+- Dataset: daniel_updated.csv
+- Note: Severe class imbalance (41 positive samples)
+
+PREPROCESSING:
+- Sample Rate: 500 Hz
+- Window Size: 500 samples (1 second)
+- Overlap: 50%
+- Marker Propagation: 98 samples before, 400 samples after
+- Class Balancing: SMOTE (if possible) or class weights
+
+FEATURE CONFIGURATION:
+- Channel Pairs: C3-C4, P3-P4, P7-P8, T7-T8
+- Frequency Bands: Delta, Theta, Alpha, Beta, Gamma
+- Total Features: 160
+
+HYPERPARAMETERS (Best):
+- class_weight: balanced
+- max_depth: 5
+- min_samples_leaf: 4
+- min_samples_split: 5
+- n_estimators: 200
+
+FILES:
+- new_model.pkl: Trained model with scaler
+- performance_plot.png: Performance visualization
+- model_info.txt: This configuration file
