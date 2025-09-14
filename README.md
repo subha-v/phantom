@@ -1,6 +1,6 @@
-# Phantom - Arduino Haptic Feedback with Chat Interface
+# Phantom - EEG-Controlled Prosthetic with Haptic Feedback & AI Assistant
 
-A system that integrates Arduino-based haptic feedback with a web chat interface, allowing users to trigger physical haptic responses through chat commands.
+A comprehensive system that integrates EEG signal processing, Arduino-based haptic feedback, proximity sensing, and an AI-powered chat interface with voice capabilities for prosthetic control and user assistance.
 
 ## 🚀 Quick Start - Running the Haptic Feedback System
 
@@ -92,18 +92,35 @@ phantom/
 │   └── keybindings.json        # Keyboard shortcuts
 ├── arduino-cli.yaml            # Arduino CLI configuration
 ├── arduino-server.js           # Node.js server for Arduino serial communication
+├── whisper-server.py           # Python server for voice transcription
 ├── hardware/
 │   ├── routines1_test/
 │   │   └── routines1_test.ino  # Haptic feedback Arduino sketch
+│   ├── prosthetic/
+│   │   └── proximity_buzzer.ino # Proximity sensing with buzzer feedback
 │   ├── led_blink/
 │   │   └── led_blink.ino       # Basic LED blink sketch
 │   └── rainbow_led/
 │       └── rainbow_led.ino     # Rainbow breathing effect
+├── model_training/             # EEG signal processing & ML models
+│   ├── preprocess.py           # EEG data preprocessing pipeline
+│   ├── features.py             # Feature extraction utilities
+│   ├── train_model.py          # Binary touch detection training
+│   ├── train_model_multiclass.py # Multiclass marker detection
+│   ├── inference.py            # Real-time prediction engine
+│   ├── touch_detection_model.pkl # Trained binary classifier (69.6% accuracy)
+│   └── multiclass_model.pkl   # Multiclass marker detector
 ├── phantom-dashboard/          # Next.js web dashboard
 │   ├── components/
-│   │   └── coach-chat.tsx      # Chat component with haptic trigger
-│   └── app/                    # Next.js app directory
-├── start_haptic_system.sh      # Startup script for entire system
+│   │   └── coach-chat.tsx      # AI chat with voice & haptic integration
+│   ├── hooks/
+│   │   └── use-voice-recording.ts # Voice recording hook
+│   └── app/
+│       └── api/
+│           └── transcribe/     # Whisper API integration
+├── start_haptic_system.sh      # Startup script for haptic system
+├── start_complete_system.sh    # Full system startup (all services)
+├── requirements.txt            # Python dependencies
 └── README.md
 ```
 
@@ -150,6 +167,28 @@ To view serial output:
 ```bash
 arduino-cli monitor --port /dev/cu.usbmodem34B7DA631B182 --config baudrate=9600
 ```
+
+## Recent Updates (2025-09-14)
+
+### EEG Model Training Pipeline
+- **Touch Detection Model**: Achieved 69.6% test accuracy for binary classification (touch vs no-touch)
+- **Multiclass Marker Detection**: Supports marker 1, marker 2, or none classification
+- **Real-time Inference**: Optimized prediction pipeline for live EEG data streams
+- **Feature Engineering**: Advanced frequency band analysis (delta, theta, alpha, beta, gamma)
+- **Channel Differencing**: Implements C3-C4, P3-P4, P7-P8, T7-T8 spatial features
+
+### Voice Integration
+- **Whisper API**: Integrated OpenAI Whisper for voice transcription
+- **Voice Recording Hook**: Real-time audio capture in React dashboard
+- **Voice-to-Command**: Voice input triggers haptic feedback and AI responses
+
+### Hardware Enhancements
+- **Proximity Sensing**: Added ultrasonic sensor with buzzer feedback for obstacle detection
+- **Multi-modal Feedback**: Combined haptic, audio, and visual feedback systems
+
+### System Architecture
+- **Complete Pipeline**: EEG → Feature Extraction → ML Model → Command → Arduino → Haptic/Audio Feedback
+- **Unified Startup**: Single script launches all services (EEG processing, web server, Arduino, voice)
 
 ## Troubleshooting
 
