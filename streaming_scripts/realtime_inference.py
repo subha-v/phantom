@@ -33,18 +33,18 @@ MODEL_PATH = "../model_training/models/new_model/new_model.pkl"
 
 # Sampling configuration
 INCOMING_SAMPLE_RATE = 500  # Hz from OpenBCI GUI
-TARGET_SAMPLE_RATE = 250    # Hz for model
-DOWNSAMPLE_FACTOR = 2       # Take every 2nd sample
-WINDOW_SIZE = 250           # Samples at 250Hz (1 second)
+TARGET_SAMPLE_RATE = 500    # Hz for model
+WINDOW_SIZE = 500           # Samples at 500Hz (1 second)
 OVERLAP = 0.5               # 50% overlap for sliding window
-UPDATE_INTERVAL = int(WINDOW_SIZE * (1 - OVERLAP))  # 125 samples
+UPDATE_INTERVAL = int(WINDOW_SIZE * (1 - OVERLAP))  # 250 samples
 
-# Channel configuration
-# Setup v2 to Setup v1 mapping
-CHANNEL_REORDER = [2, 3, 4, 5, 6, 7, 0, 1]  # Reorder to match training data
+# Channel configuration matching training setup:
+# Channel 0: T7, Channel 1: T8, Channel 2: C3, Channel 3: C4
+# Channel 4: P7, Channel 5: P8, Channel 6: P3, Channel 7: P4
+# Training uses: C3-C4 (ch2-ch3), P3-P4 (ch6-ch7), P7-P8 (ch4-ch5), T7-T8 (ch0-ch1)
 
 class EEGBuffer:
-    """Circular buffer for EEG data with downsampling"""
+    """Circular buffer for EEG data at 500Hz"""
 
     def __init__(self, n_channels: int = 8, buffer_size: int = WINDOW_SIZE):
         self.n_channels = n_channels
@@ -53,22 +53,20 @@ class EEGBuffer:
         self.sample_counter = 0
 
     def add_samples(self, samples: List[List[float]]):
-        """Add samples with downsampling from 500Hz to 250Hz"""
+        """Add samples at 500Hz without downsampling"""
         for channel_idx, channel_data in enumerate(samples):
-            for sample_idx, sample in enumerate(channel_data):
-                # Downsample: take every 2nd sample
-                if self.sample_counter % DOWNSAMPLE_FACTOR == 0:
-                    self.buffers[channel_idx].append(sample)
+            for sample in channel_data:
+                self.buffers[channel_idx].append(sample)
                 self.sample_counter += 1
 
     def get_window(self) -> Optional[np.ndarray]:
         """Get current window if buffer is full"""
         if all(len(buf) >= self.buffer_size for buf in self.buffers):
-            # Reorder channels to match training data
-            reordered = np.zeros((self.n_channels, self.buffer_size))
-            for new_idx, old_idx in enumerate(CHANNEL_REORDER):
-                reordered[new_idx] = list(self.buffers[old_idx])
-            return reordered
+            # Create array with channels in original order
+            window = np.zeros((self.n_channels, self.buffer_size))
+            for idx in range(self.n_channels):
+                window[idx] = list(self.buffers[idx])
+            return window
         return None
 
     def is_ready(self) -> bool:
@@ -103,13 +101,14 @@ class TouchDetectionInference:
 
     def compute_channel_differences(self, data: np.ndarray) -> np.ndarray:
         """Compute channel differences as used in training"""
-        # Channel pairs: C3-C4, P3-P4, P7-P8, T7-T8
-        # After reordering: indices [0-1, 4-5, 2-3, 6-7]
+        # Channel mapping:
+        # Ch0: T7, Ch1: T8, Ch2: C3, Ch3: C4, Ch4: P7, Ch5: P8, Ch6: P3, Ch7: P4
+        # Training expects: C3-C4, P3-P4, P7-P8, T7-T8
         differences = np.zeros((4, data.shape[1]))
-        differences[0] = data[0] - data[1]  # C3-C4
-        differences[1] = data[4] - data[5]  # P3-P4
-        differences[2] = data[2] - data[3]  # P7-P8
-        differences[3] = data[6] - data[7]  # T7-T8
+        differences[0] = data[2] - data[3]  # C3-C4 (ch2-ch3)
+        differences[1] = data[6] - data[7]  # P3-P4 (ch6-ch7)
+        differences[2] = data[4] - data[5]  # P7-P8 (ch4-ch5)
+        differences[3] = data[0] - data[1]  # T7-T8 (ch0-ch1)
         return differences
 
     def extract_features(self, window: np.ndarray) -> np.ndarray:
@@ -193,7 +192,7 @@ class RealtimeEEGProcessor:
                     self.sample_count += len(raw_eeg_data[0]) if raw_eeg_data else 0
 
                     # Check if we should perform inference
-                    if self.buffer.is_ready() and (self.sample_count - self.last_update) >= UPDATE_INTERVAL * DOWNSAMPLE_FACTOR:
+                    if self.buffer.is_ready() and (self.sample_count - self.last_update) >= UPDATE_INTERVAL:
                         window = self.buffer.get_window()
                         if window is not None:
                             self.perform_inference(window)
@@ -282,9 +281,9 @@ class RealtimeEEGProcessor:
         print("="*60)
         print("Real-time EEG Inference System")
         print("="*60)
-        print(f"Model: new_model (binary classification)")
-        print(f"Input: 500Hz, 8 channels from OpenBCI")
-        print(f"Processing: Downsampling to 250Hz, window size 250 samples")
+        print("Model: new_model (binary classification)")
+        print("Input: 500Hz, 8 channels from OpenBCI")
+        print("Processing: 500Hz, window size 500 samples (1 second)")
         print(f"Output: WebSocket on port {WEBSOCKET_PORT}")
         print("="*60)
 
