@@ -1,15 +1,67 @@
-# Arduino UNO R4 WiFi Development Setup
+# Phantom - Arduino Haptic Feedback with Chat Interface
 
-This project is configured for Arduino UNO R4 WiFi development using Arduino CLI and VS Code.
+A system that integrates Arduino-based haptic feedback with a web chat interface, allowing users to trigger physical haptic responses through chat commands.
+
+## 🚀 Quick Start - Running the Haptic Feedback System
+
+### Step 1: Install Dependencies
+```bash
+# Install Arduino server dependencies (run from project root)
+npm install express cors serialport @serialport/parser-readline
+```
+
+### Step 2: Upload Arduino Sketch
+```bash
+# Upload the haptic feedback sketch to Arduino
+arduino-cli upload --fqbn arduino:renesas_uno:unor4wifi --port /dev/tty.usbmodem* hardware/routines1_test
+```
+
+### Step 3: Start the System
+
+#### Option A: Use the Startup Script (Easiest)
+```bash
+# From project root, run:
+./start_haptic_system.sh
+```
+This starts both servers automatically!
+
+#### Option B: Manual Start (Two Terminals)
+
+**Terminal 1 - Start Arduino Server:**
+```bash
+# Run from project root directory
+node arduino-server.js
+```
+You should see:
+```
+Arduino server running on port 3001
+Found Arduino at /dev/tty.usbmodem...
+Serial port opened successfully
+```
+
+**Terminal 2 - Start Dashboard:**
+```bash
+# Navigate to dashboard and start
+cd phantom-dashboard
+npm run dev
+```
+
+### Step 4: Test Haptic Feedback
+1. Open browser at http://localhost:3000
+2. Go to the chat interface
+3. Type: `play haptic feedback`
+4. The Arduino will trigger haptic motor!
 
 ## Hardware Setup
 - **Board**: Arduino UNO R4 WiFi
-- **Port**: `/dev/cu.usbmodem34B7DA631B182`
+- **Haptic Driver**: Adafruit DRV2605
+- **Connection**: Haptic driver connected via I2C/Qwiic
 - **FQBN**: `arduino:renesas_uno:unor4wifi`
 
 ## Prerequisites
-- Arduino CLI (already installed - version 1.3.1)
-- VS Code with this workspace open
+- Node.js (v18+)
+- Arduino CLI (version 1.3.1+)
+- VS Code (optional, for development)
 
 ## Available VS Code Tasks
 
@@ -36,17 +88,22 @@ These shortcuts work when any Arduino task is running (compile, upload, etc.).
 ```
 phantom/
 ├── .vscode/
-│   └── tasks.json          # VS Code task definitions
-│   └── keybindings.json    # Keyboard shortcuts for task interruption
-├── arduino-cli.yaml        # Arduino CLI configuration
+│   └── tasks.json              # VS Code task definitions
+│   └── keybindings.json        # Keyboard shortcuts
+├── arduino-cli.yaml            # Arduino CLI configuration
+├── arduino-server.js           # Node.js server for Arduino serial communication
 ├── hardware/
+│   ├── routines1_test/
+│   │   └── routines1_test.ino  # Haptic feedback Arduino sketch
 │   ├── led_blink/
-│   │   └── led_blink.ino   # Basic LED blink sketch
-│   ├── rainbow_led/
-│   │   └── rainbow_led.ino # Rainbow breathing effect
-│   └── stop_sketch/
-│       └── stop_sketch.ino # Empty sketch to stop programs
-├── add_sketch_tasks.py     # Helper script for adding new sketch tasks
+│   │   └── led_blink.ino       # Basic LED blink sketch
+│   └── rainbow_led/
+│       └── rainbow_led.ino     # Rainbow breathing effect
+├── phantom-dashboard/          # Next.js web dashboard
+│   ├── components/
+│   │   └── coach-chat.tsx      # Chat component with haptic trigger
+│   └── app/                    # Next.js app directory
+├── start_haptic_system.sh      # Startup script for entire system
 └── README.md
 ```
 
@@ -96,6 +153,23 @@ arduino-cli monitor --port /dev/cu.usbmodem34B7DA631B182 --config baudrate=9600
 
 ## Troubleshooting
 
+### Haptic Feedback Issues
+- **"Coach is thinking" but no haptic**:
+  - Check Arduino server is running: `node arduino-server.js`
+  - Verify Arduino is connected and sketch is uploaded
+  - Check server logs for "HAPTIC command sent"
+
+- **Arduino not detected**:
+  - Unplug and reconnect Arduino USB
+  - Close Arduino IDE Serial Monitor if open
+  - Check port with: `ls /dev/tty.usbmodem*`
+
+- **Haptic motor not moving**:
+  - Verify DRV2605 is connected to I2C/Qwiic port
+  - Check haptic motor is attached to DRV2605
+  - Test with curl: `curl -X POST http://localhost:3001/api/arduino/haptic`
+
+### General Issues
 - **Board not detected**: Check USB connection and ensure the correct port is specified
 - **Compilation errors**: Verify the sketch syntax and required libraries
 - **Upload fails**: Ensure the board is not in use by another application
