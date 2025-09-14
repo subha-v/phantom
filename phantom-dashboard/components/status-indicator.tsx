@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { useEEGStatus } from "@/hooks/useEEGStatus"
 
-type StatusType = "normal" | "touch"
+type StatusType = "none" | "normal" | "touch"
 
 interface StatusConfig {
   color: string
@@ -15,6 +15,13 @@ interface StatusConfig {
 }
 
 const statusConfigs: Record<StatusType, StatusConfig> = {
+  none: {
+    color: "bg-gray-500",
+    bgColor: "bg-gray-400",
+    label: "NONE",
+    description: "No data stream detected",
+    badgeVariant: "outline",
+  },
   normal: {
     color: "bg-green-500",
     bgColor: "bg-green-400",
@@ -34,7 +41,7 @@ const statusConfigs: Record<StatusType, StatusConfig> = {
 export function StatusIndicator() {
   const { status, confidence, isConnected, error } = useEEGStatus()
   const [isAnimating, setIsAnimating] = useState(false)
-  const [previousStatus, setPreviousStatus] = useState<StatusType>("normal")
+  const [previousStatus, setPreviousStatus] = useState<StatusType>("none")
 
   // Animate on status change
   useEffect(() => {
@@ -88,7 +95,7 @@ export function StatusIndicator() {
         <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
           <div
             className={`h-full transition-all duration-300 ${
-              status === "touch" ? "bg-red-500" : "bg-green-500"
+              status === "touch" ? "bg-red-500" : status === "normal" ? "bg-green-500" : "bg-gray-500"
             }`}
             style={{ width: `${confidence * 100}%` }}
           />
@@ -96,7 +103,7 @@ export function StatusIndicator() {
       </div>
 
       <Badge variant={config.badgeVariant}>
-        {status === "normal" ? "Monitoring" : "Touch Detected"}
+        {status === "none" ? "No Data" : status === "normal" ? "Monitoring" : "Touch Detected"}
       </Badge>
     </div>
   )

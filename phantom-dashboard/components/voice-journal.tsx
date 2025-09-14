@@ -1,10 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Mic, MicOff } from "lucide-react"
+import { Mic, MicOff, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { useVoiceRecording } from "@/hooks/use-voice-recording"
 
 interface JournalEntry {
   id: string
@@ -17,8 +18,17 @@ interface JournalEntry {
 }
 
 export function VoiceJournal() {
-  const [isRecording, setIsRecording] = useState(false)
   const [recordingTime, setRecordingTime] = useState(0)
+  const [currentTranscript, setCurrentTranscript] = useState("")
+
+  // Use the actual voice recording hook
+  const {
+    isRecording,
+    isProcessing: isTranscribing,
+    error: voiceError,
+    recordAndTranscribe,
+  } = useVoiceRecording()
+
   const [entries, setEntries] = useState<JournalEntry[]>([
     {
       id: "1",
@@ -49,8 +59,6 @@ export function VoiceJournal() {
     },
   ])
 
-  const [currentTranscript, setCurrentTranscript] = useState("")
-
   // Recording timer
   useEffect(() => {
     let interval: NodeJS.Timeout
@@ -64,32 +72,53 @@ export function VoiceJournal() {
     return () => clearInterval(interval)
   }, [isRecording])
 
-  const startRecording = () => {
-    setIsRecording(true)
-    setCurrentTranscript("")
-    // Simulate real-time transcription
-    setTimeout(() => {
-      setCurrentTranscript("I'm experiencing some discomfort in my...")
-    }, 2000)
-    setTimeout(() => {
-      setCurrentTranscript("I'm experiencing some discomfort in my right stump area today...")
-    }, 4000)
-  }
+  const handleRecordButton = async () => {
+    console.log("Voice journal button clicked", { isRecording, isTranscribing })
 
-  const stopRecording = () => {
-    setIsRecording(false)
-    if (currentTranscript) {
-      // Simulate AI processing and summary generation
-      const newEntry: JournalEntry = {
-        id: Date.now().toString(),
-        timestamp: new Date().toLocaleString(),
-        transcript: currentTranscript + " It's about a 6 out of 10 pain level.",
-        summary: "Discomfort in right stump, 6/10 pain level",
-        painLevel: 6,
-        duration: recordingTime,
+    if (isTranscribing) {
+      console.log("Already transcribing, skipping")
+      return
+    }
+
+    try {
+      const transcribedText = await recordAndTranscribe()
+      console.log("Journal transcription result:", transcribedText)
+
+      // If we got text back, create a new journal entry
+      if (transcribedText && transcribedText.trim()) {
+        // Extract pain level from the transcript (look for numbers followed by "out of 10" or "/10")
+        const painMatch = transcribedText.match(/(\d+)\s*(?:out of 10|\/10)/i)
+        const painLevel = painMatch ? parseInt(painMatch[1]) : 5 // Default to 5 if not mentioned
+
+        // Generate a simple summary (first 100 characters or first sentence)
+        const firstSentence = transcribedText.split(/[.!?]/)[0]
+        const summary = firstSentence.length > 100
+          ? firstSentence.substring(0, 97) + "..."
+          : firstSentence
+
+        const newEntry: JournalEntry = {
+          id: Date.now().toString(),
+          timestamp: new Date().toLocaleString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+          }),
+          transcript: transcribedText.trim(),
+          summary: summary + (painMatch ? `, ${painLevel}/10` : ""),
+          painLevel: painLevel,
+          duration: Math.ceil(recordingTime / 60), // Convert to minutes
+        }
+
+        // Add the new entry to the beginning of the list
+        setEntries((prev) => [newEntry, ...prev])
+        setCurrentTranscript("")
+
+        console.log("New journal entry added:", newEntry)
       }
-      setEntries((prev) => [newEntry, ...prev])
-      setCurrentTranscript("")
+    } catch (error) {
+      console.error("Voice journal recording error:", error)
     }
   }
 
@@ -114,31 +143,41 @@ export function VoiceJournal() {
           className={`w-24 h-24 rounded-full transition-all duration-300 ${
             isRecording ? "bg-red-500 hover:bg-red-600 animate-pulse" : "bg-blue-500 hover:bg-blue-600"
           }`}
-          onClick={isRecording ? stopRecording : startRecording}
+          onClick={handleRecordButton}
+          disabled={isTranscribing}
         >
           {isRecording ? <MicOff className="h-8 w-8 text-white" /> : <Mic className="h-8 w-8 text-white" />}
         </Button>
 
         <div className="text-center">
           <p className="text-sm text-muted-foreground">
-            {isRecording ? "Recording..." : "Click to record voice entry"}
+            {isTranscribing ? "Processing speech..." : isRecording ? "Recording... Click again to stop" : "Click to record voice entry"}
           </p>
           {isRecording && (
             <Badge variant="destructive" className="mt-1">
               {formatTime(recordingTime)}
             </Badge>
           )}
+          {isTranscribing && (
+            <div className="flex items-center justify-center mt-2">
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              <span className="text-sm">Transcribing...</span>
+            </div>
+          )}
+          {voiceError && (
+            <p className="text-xs text-red-500 mt-2">{voiceError}</p>
+          )}
         </div>
       </div>
 
-      {/* Live Transcription */}
-      {(isRecording || currentTranscript) && (
-        <div className="bg-muted p-4 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+      {/* Recording Status */}
+      {isRecording && (
+        <div className="bg-muted p-4 rounded-lg border-2 border-red-200 dark:border-red-800">
           <h4 className="font-medium mb-2 flex items-center space-x-2">
-            <span>Live Transcription:</span>
-            {isRecording && <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>}
+            <span>Recording in Progress</span>
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
           </h4>
-          <p className="text-sm text-muted-foreground italic">{currentTranscript || "Listening..."}</p>
+          <p className="text-sm text-muted-foreground italic">Speak clearly about your pain experience...</p>
         </div>
       )}
 

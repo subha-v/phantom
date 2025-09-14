@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 
-export type EEGStatus = 'normal' | 'touch'
+export type EEGStatus = 'none' | 'normal' | 'touch'
 
 export interface EEGStatusData {
   status: EEGStatus
@@ -25,10 +25,11 @@ const RECONNECT_DELAY = 3000 // 3 seconds
 const MAX_RECONNECT_ATTEMPTS = 10
 
 export function useEEGStatus(): UseEEGStatusReturn {
-  const [status, setStatus] = useState<EEGStatus>('normal')
+  const [status, setStatus] = useState<EEGStatus>('none')
   const [confidence, setConfidence] = useState<number>(0)
   const [isConnected, setIsConnected] = useState<boolean>(false)
   const [lastUpdate, setLastUpdate] = useState<number | null>(null)
+  const [hasReceivedData, setHasReceivedData] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [reconnectAttempts, setReconnectAttempts] = useState<number>(0)
 
@@ -53,6 +54,7 @@ export function useEEGStatus(): UseEEGStatusReturn {
           setStatus(data.status)
           setConfidence(data.confidence)
           setLastUpdate(data.timestamp)
+          setHasReceivedData(true)
 
           // Log significant changes
           if (data.status === 'touch' && data.confidence > 0.8) {
@@ -71,6 +73,8 @@ export function useEEGStatus(): UseEEGStatusReturn {
       ws.onclose = () => {
         console.log('Disconnected from EEG inference server')
         setIsConnected(false)
+        setStatus('none')
+        setHasReceivedData(false)
 
         // Attempt to reconnect
         if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
@@ -102,20 +106,21 @@ export function useEEGStatus(): UseEEGStatusReturn {
     }
   }, []) // Only connect once on mount
 
-  // Reset to normal if no updates for 5 seconds
+  // Reset to none if no updates for 5 seconds
   useEffect(() => {
-    if (!isConnected || !lastUpdate) return
+    if (!isConnected || !lastUpdate || !hasReceivedData) return
 
     const timeout = setTimeout(() => {
       const timeSinceUpdate = Date.now() / 1000 - lastUpdate
       if (timeSinceUpdate > 5) {
-        setStatus('normal')
+        setStatus('none')
         setConfidence(0)
+        setHasReceivedData(false)
       }
     }, 5000)
 
     return () => clearTimeout(timeout)
-  }, [lastUpdate, isConnected])
+  }, [lastUpdate, isConnected, hasReceivedData])
 
   return {
     status,
