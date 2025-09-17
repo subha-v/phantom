@@ -1,6 +1,24 @@
-# Phantom - EEG-Controlled Prosthetic with Haptic Feedback & AI Assistant
+# Phantom – EEG-Controlled Prosthetic with Haptic Feedback & AI Assistant  
 
-A comprehensive system that integrates EEG signal processing, Arduino-based haptic feedback, proximity sensing, and an AI-powered chat interface with voice capabilities for prosthetic control and user assistance.
+**Phantom** is a breakthrough system that tackles **phantom limb pain at multiple levels**—from decoding neural signals to delivering real-time haptic, visual, and voice feedback. By combining **EEG brain signal processing, prosthetic sensing, haptic stimulation, and an AI-powered assistant**, Phantom creates a **closed-loop system that interrupts, reduces, and manages phantom pain** in amputees.  
+
+💡 **Why this matters:**  
+- Up to **80% of amputees suffer from phantom limb pain**, one of the most persistent challenges in rehabilitation.  
+- A recent *Nature* article (Aug 2025) confirms that **haptic feedback is one of the most reliable treatments** for phantom limb pain.  
+- Phantom demonstrates how **affordable, open-source hardware and AI tools** can be combined into a scalable solution with **clinical potential**.  
+
+---
+
+## ✨ What Phantom Does  
+
+- **Detects Brain Signals**: Reads EEG activity from the somatosensory cortex & parietal lobe, where pain and touch are represented.  
+- **Localizes Pain Perception**: Maps brain activity to phantom pain/touch sensations in real time.  
+- **Triggers Feedback Loops**: Converts those signals into synchronized **haptic (vibration), visual (LED), and audio cues**.  
+- **Prosthetic Integration**: A servo-driven prosthetic hand triggers haptic vibration whenever it touches a surface, restoring feedback to the residual limb.  
+- **AI Assistant**: A voice-enabled chat system helps users interact with their prosthetic, adjust intensity, and monitor feedback.  
+
+> 🔄 In short: Phantom creates a **seamless closed-loop system** that translates thought → detection → feedback → relief.  
+
 
 ## 🚀 Quick Start - Running the Haptic Feedback System
 
