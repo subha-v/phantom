@@ -1,4 +1,4 @@
-# Phantom – EEG-Controlled Prosthetic with Haptic Feedback & AI Assistant  
+# ![Phantom EEG + Prosthetic System](https://cdn.discordapp.com/attachments/847347007785926676/1417746208734052412/image.png?ex=68cb9a8c&is=68ca490c&hm=e09dd4f9082881f99618c73cfdf92bbfa60660cab921c1854220186c7fcbab6d)
 
 **Phantom** is a breakthrough system that tackles **phantom limb pain at multiple levels**—from decoding neural signals to delivering real-time haptic, visual, and voice feedback. By combining **EEG brain signal processing, prosthetic sensing, haptic stimulation, and an AI-powered assistant**, Phantom creates a **closed-loop system that interrupts, reduces, and manages phantom pain** in amputees.  
 
